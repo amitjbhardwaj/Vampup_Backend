@@ -1,100 +1,107 @@
-require("dotenv").config();
-const express = require("express");
-const mongoose = require("mongoose");
-const bcrypt = require("bcryptjs");
-const jwt = require("jsonwebtoken");
-const cors = require("cors");
-
+const express = require('express');
 const app = express();
-app.use(express.json());
-app.use(cors());
+const mongoose = require('mongoose');
+app.use(express.json())
+const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
 
-// Securely stored credentials
-//const mongoUrl = process.env.MONGO_URL;
-//const JWT_SECRET = process.env.JWT_SECRET;
-const mongoUrl = "mongodb+srv://amitjbhardwaj:admin@cluster0.mcxgr.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0";
-const JWT_SECRET =
-  "hvdvay6ert72839289()aiyg8t87qt72393293883uhefiuh78ttq3ifi78272jdsds039[]]pou89ywe";
+const mongoUrl = "mongodb+srv://amitjbhardwaj:admin@cluster0.mcxgr.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0"
 
-// Connect to MongoDB
-mongoose
-    .connect(mongoUrl)
-    .then(() => console.log("✅ Database Connected"))
-    .catch((err) => console.error("❌ DB Connection Error:", err));
 
-require("./UserDetails");
-const User = mongoose.model("UserInfo");
+const JWT_SECRET = "skldfjdsflk()dkfljfkf[]sklmf345klmkvdfmvklksdgj40pop64iktelrgel";
+mongoose.connect(mongoUrl).then(() => {
+    console.log("Database connected");
+}).catch((e) => {
+    console.log(e);
+})
 
-// Authentication Middleware
-const authMiddleware = (req, res, next) => {
-    const token = req.headers["authorization"];
-    if (!token) return res.status(403).json({ error: "Access Denied" });
 
-    try {
-        const verified = jwt.verify(token, JWT_SECRET);
-        req.user = verified;
-        next();
-    } catch (err) {
-        res.status(401).json({ error: "Invalid Token" });
-    }
-};
+require("./UserDetails")
 
-// Route: Test Server
+const User = mongoose.model("UserInfo")
 app.get("/", (req, res) => {
-    res.json({ status: "Server Running" });
-});
+    res.send({ status: "Started" })
+})
 
-// Route: Register User
 app.post("/register", async (req, res) => {
+    //array destructing 
     const { role, firstName, lastName, email, password, aadhar, accountHolder, accountNumber, ifsc, branch, mobile } = req.body;
 
-    // Check if user exists
-    const oldUser = await User.findOne({ email });
-    if (oldUser) return res.status(400).json({ error: "User already exists" });
+    const oldUser = await User.findOne({ email: email }).collation({ locale: "en", strength: 2 })
 
-    // Hash password
-    const encryptedPassword = await bcrypt.hash(password, 12);
+    if (oldUser) {
+        return res.send("User already exists !!!")
+    }
+
+    const encryptedPassword = await bcrypt.hash(password, 10);
 
     try {
-        const newUser = await User.create({
-            role, firstName, lastName, email, password: encryptedPassword,
-            aadhar, accountHolder, accountNumber, ifsc, branch, mobile
-        });
-
-        res.status(201).json({ message: "User Created", userId: newUser._id });
+        await User.create({
+            role: role,
+            firstName: firstName,
+            lastName,
+            email,
+            password: encryptedPassword,
+            aadhar,
+            accountHolder,
+            accountNumber,
+            ifsc,
+            branch,
+            mobile,
+        })
+        res.send({ status: "OK", data: "User created" })
     } catch (error) {
-        res.status(500).json({ error: "Registration failed", details: error.message });
+        res.send({ status: "error", data: error })
     }
-});
+})
 
-// Route: User Login
-app.post("/login", async (req, res) => {
+app.post("/login-user", async (req, res) => {
     const { email, password } = req.body;
 
-    const user = await User.findOne({ email });
-    if (!user) return res.status(404).json({ error: "User not found" });
+    // Check if user exists
+    const oldUser = await User.findOne({ email: email });
+    if (!oldUser) {
+        return res.status(400).json({ error: "User doesn't exist!" });
+    }
 
-    const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch) return res.status(401).json({ error: "Invalid credentials" });
+    // Verify password
+    const isPasswordValid = await bcrypt.compare(password, oldUser.password);
+    if (!isPasswordValid) {
+        return res.status(401).json({ error: "Invalid credentials" });
+    }
 
-    // Generate JWT token
-    const token = jwt.sign({ email: user.email, id: user._id }, JWT_SECRET, { expiresIn: "1h" });
+    // Generate JWT token with user role included
+    const token = jwt.sign(
+        { email: oldUser.email, role: oldUser.role }, // Include role in JWT
+        process.env.JWT_SECRET || "your_secret_key",
+        { expiresIn: "1h" }
+    );
 
-    res.json({ message: "Login successful", token, userType: user.role });
+    return res.status(200).json({ status: "OK", token, role: oldUser.role });
 });
 
-// Route: Get User Data (Protected)
-app.get("/userdata", authMiddleware, async (req, res) => {
-    try {
-        const user = await User.findById(req.user.id).select("-password");
-        if (!user) return res.status(404).json({ error: "User not found" });
 
-        res.json({ status: "Success", data: user });
+app.post("/userdata", async (req, res) => {
+    const { token } = req.body;
+
+    try {
+        const user = jwt.verify(token, process.env.JWT_SECRET || "your_secret_key");
+        const userEmail = user.email;
+
+        // Find user by email in the database
+        const userData = await User.findOne({ email: userEmail });
+
+        if (!userData) {
+            return res.status(404).json({ status: "error", data: "User not found" });
+        }
+
+        return res.status(200).json({ status: "OK", data: userData });
     } catch (error) {
-        res.status(500).json({ error: "Error retrieving user data" });
+        return res.status(401).json({ status: "error", data: "Invalid token" });
     }
 });
 
-// Start Server
-const PORT = process.env.PORT || 5001;
-app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
+
+app.listen(5001, () => {
+    console.log('Node js server has been started!!!')
+})

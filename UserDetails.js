@@ -1,7 +1,6 @@
 const mongoose = require("mongoose");
 
-const UserDetailSchema = new mongoose.Schema(
-  {
+const UserSchema = new mongoose.Schema({
     role: String,
     firstName: String,
     lastName: String,
@@ -12,10 +11,7 @@ const UserDetailSchema = new mongoose.Schema(
     accountNumber: String,
     ifsc: String,
     branch: String,
-    mobile: String, 
-  },
-  {
-    collection: "UserInfo",
-  }
-);
-mongoose.model("UserInfo", UserDetailSchema);
+    mobile: String,
+}, { collation: { locale: 'en', strength: 2 } }); // Ensure collation is an object
+
+mongoose.model("UserInfo", UserSchema);
