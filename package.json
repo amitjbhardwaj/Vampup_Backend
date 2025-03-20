@@ -1,0 +1,30 @@
+{
+  "name": "vampup_backend",
+  "version": "1.0.0",
+  "description": "",
+  "homepage": "https://github.com/amitjbhardwaj/Vampup_Backend#readme",
+  "bugs": {
+    "url": "https://github.com/amitjbhardwaj/Vampup_Backend/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/amitjbhardwaj/Vampup_Backend.git"
+  },
+  "license": "ISC",
+  "author": "",
+  "type": "commonjs",
+  "main": "index.js",
+  "scripts": {
+    "start": "node app"
+  },
+  "dependencies": {
+    "bcryptjs": "^3.0.2",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2",
+    "jsonwebtoken": "^9.0.2",
+    "mongodb": "^6.15.0",
+    "mongoose": "^8.12.1",
+    "nodemon": "^3.1.9"
+  }
+}
