@@ -101,13 +101,23 @@ app.post("/userdata", async (req, res) => {
     }
 });
 
+app.get("/get-all-user", async (req, res) => {
+    try {
+      const data = await User.find({});
+      res.send({ status: "OK", data: data });
+    } catch (error) {
+      return res.send({ error: error });
+    }
+  });
+
+
 
 require("./ProjectsDetails")
 const Project = mongoose.model("ProjectInfo")
 
 app.post("/create-project", async (req, res) => {
     //array destructing 
-    const { project_Id, project_description, long_project_description, assigned_to, project_start_date, project_end_date, contractor_phone, completion_percentage, status } = req.body;
+    const { project_Id, project_description, long_project_description, created_by, project_start_date, project_end_date, contractor_phone, completion_percentage, status } = req.body;
 
     const oldProject = await Project.findOne({ project_Id: project_Id }).collation({ locale: "en", strength: 2 })
 
@@ -125,7 +135,7 @@ app.post("/create-project", async (req, res) => {
             project_Id: project_Id,
             project_description: project_description,
             long_project_description,
-            assigned_to,
+            created_by,
             project_start_date: formattedStartDate,
             project_end_date: formattedEndDate,
             contractor_phone,
@@ -137,6 +147,16 @@ app.post("/create-project", async (req, res) => {
         res.send({ status: "error", data: error })
     }
 })
+
+
+app.get("/get-all-projects", async (req, res) => {
+    try {
+      const data = await Project.find({});
+      res.send({ status: "OK", data: data });
+    } catch (error) {
+      return res.send({ error: error });
+    }
+  });
 
 app.listen(5001, () => {
     console.log('Node js server has been started!!!')
