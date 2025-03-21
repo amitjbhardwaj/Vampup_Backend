@@ -102,6 +102,42 @@ app.post("/userdata", async (req, res) => {
 });
 
 
+require("./ProjectsDetails")
+const Project = mongoose.model("ProjectInfo")
+
+app.post("/create-project", async (req, res) => {
+    //array destructing 
+    const { project_Id, project_description, long_project_description, assigned_to, project_start_date, project_end_date, contractor_phone, completion_percentage, status } = req.body;
+
+    const oldProject = await Project.findOne({ project_Id: project_Id }).collation({ locale: "en", strength: 2 })
+
+    if (oldProject) {
+        return res.send("Project already exists !!!")
+    }
+
+    // Format dates to yyyy-mm-dd (remove time)
+    const formattedStartDate = new Date(project_start_date).toISOString().split('T')[0];
+    const formattedEndDate = new Date(project_end_date).toISOString().split('T')[0];
+
+
+    try {
+        await Project.create({
+            project_Id: project_Id,
+            project_description: project_description,
+            long_project_description,
+            assigned_to,
+            project_start_date: formattedStartDate,
+            project_end_date: formattedEndDate,
+            contractor_phone,
+            completion_percentage,
+            status,
+        })
+        res.send({ status: "OK", data: "Project created" })
+    } catch (error) {
+        res.send({ status: "error", data: error })
+    }
+})
+
 app.listen(5001, () => {
     console.log('Node js server has been started!!!')
 })
