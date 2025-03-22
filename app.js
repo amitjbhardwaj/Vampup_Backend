@@ -127,7 +127,7 @@ app.post("/create-project", async (req, res) => {
 
     // Format dates to yyyy-mm-dd (remove time)
     const formattedStartDate = new Date(project_start_date).toISOString().split('T')[0];
-    const formattedEndDate = new Date(project_end_date).toISOString().split('T')[0];
+    //const formattedEndDate = new Date(project_end_date).toISOString().split('T')[0];
 
 
     try {
@@ -137,7 +137,7 @@ app.post("/create-project", async (req, res) => {
             long_project_description,
             created_by,
             project_start_date: formattedStartDate,
-            project_end_date: formattedEndDate,
+            project_end_date,
             contractor_phone,
             completion_percentage,
             status,
