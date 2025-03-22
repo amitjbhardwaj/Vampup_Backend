@@ -168,6 +168,29 @@ app.get("/get-all-projects", async (req, res) => {
     }
 });
 
+app.put("/update-project/:projectId", async (req, res) => {
+    const { projectId } = req.params; // Correcting param usage
+    const { assign_to } = req.body; // Expecting contractor's name
+
+    try {
+        const updatedProject = await Project.findByIdAndUpdate(
+            projectId, // Correct ID usage
+            { assign_to }, // Store contractor's name properly
+            { new: true, upsert: true } // Ensure new field is added
+        );
+
+        if (!updatedProject) {
+            return res.status(404).json({ status: "ERROR", message: "Project not found" });
+        }
+
+        res.json({ status: "OK", message: "Project assigned", data: updatedProject });
+    } catch (error) {
+        console.error("Update project error:", error);
+        res.status(500).json({ status: "ERROR", message: "Server error" });
+    }
+});
+
+
 
 app.listen(5001, () => {
     console.log('Node js server has been started!!!')
