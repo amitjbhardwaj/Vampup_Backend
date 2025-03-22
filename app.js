@@ -196,6 +196,36 @@ app.put("/update-project/:projectId", async (req, res) => {
     }
 });
 
+app.put("/update-project-status-enddate/:projectId", async (req, res) => {
+    const { projectId } = req.params; // Correct ID usage
+    const { status, project_end_date } = req.body; // Expecting new status and end date in the request body
+
+    // Validate input
+    if (!status || !project_end_date) {
+        return res.status(400).json({ status: "ERROR", message: "Status and End Date are required" });
+    }
+
+    try {
+        // Find and update the project with new status and end date
+        const updatedProject = await Project.findByIdAndUpdate(
+            projectId, // Correct ID usage
+            { 
+                status, // Update the status field
+                project_end_date, // Update the end date field
+            },
+            { new: true } // Ensure the updated project is returned
+        );
+
+        if (!updatedProject) {
+            return res.status(404).json({ status: "ERROR", message: "Project not found" });
+        }
+
+        res.json({ status: "OK", message: "Project updated", data: updatedProject });
+    } catch (error) {
+        console.error("Error updating project:", error);
+        res.status(500).json({ status: "ERROR", message: "Server error" });
+    }
+});
 
 
 app.listen(5001, () => {
