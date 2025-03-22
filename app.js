@@ -158,6 +158,17 @@ app.get("/get-all-projects", async (req, res) => {
     }
   });
 
+  app.delete("/delete-project/:id", async (req, res) => {
+    const { id } = req.params;
+    try {
+        await Project.deleteOne({ _id: id });
+        res.status(200).send({ status: "OK", data: "Project Deleted" });
+    } catch (error) {
+        res.status(500).send({ status: "ERROR", error: error.message });
+    }
+});
+
+
 app.listen(5001, () => {
     console.log('Node js server has been started!!!')
 })
