@@ -77,7 +77,13 @@ app.post("/login-user", async (req, res) => {
         { expiresIn: "1h" }
     );
 
-    return res.status(200).json({ status: "OK", token, role: oldUser.role });
+    return res.status(200).json({
+        status: "OK",
+        token,
+        role: oldUser.role,
+        firstName: oldUser.firstName,
+        lastName: oldUser.lastName,
+    });
 });
 
 
