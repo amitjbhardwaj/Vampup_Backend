@@ -10,7 +10,8 @@ const ProjectDetailSchema = new mongoose.Schema({
     contractor_phone: String,
     completion_percentage: Number,
     status: String,
-    assign_to: String, // Add this field to store contractor name
+    assign_to: String,
+    reason_on_hold: String,
 }, { collation: { locale: 'en', strength: 2 } }); // Ensure collation is an object
 
 mongoose.model("ProjectInfo", ProjectDetailSchema);
