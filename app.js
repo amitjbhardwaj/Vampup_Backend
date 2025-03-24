@@ -164,7 +164,69 @@ app.get("/get-all-projects", async (req, res) => {
     }
 });
 
-app.get("/get-projects-by-assign-to-contractor", async (req, res) => {
+app.get("/get-projects-by-admin", async (req, res) => {
+    const { created_by, status } = req.query; // Get `created_by` and `status` values from query parameters
+    
+    if (!created_by) {
+        return res.status(400).send({ error: "created_by parameter is required" });
+    }
+
+    try {
+        // Build the query object dynamically based on provided parameters
+        const query = { created_by: created_by };
+        
+        // If a status is provided, add it to the query object
+        if (status) {
+            query.status = status.trim();
+        }
+
+        // Find projects that match the query criteria
+        const projects = await Project.find(query);
+
+        // If no projects are found, return a message
+        if (projects.length === 0) {
+            return res.status(404).send({ message: "No projects found for this user" });
+        }
+
+        // Send back the projects if found
+        res.send({ status: "OK", data: projects });
+    } catch (error) {
+        return res.status(500).send({ error: error.message });
+    }
+});
+
+app.get("/get-projects-by-contractor", async (req, res) => {
+    const { assign_to, status } = req.query; // Get `assign_to` and `status` values from query parameters
+    
+    if (!assign_to) {
+        return res.status(400).send({ error: "assign_to parameter is required" });
+    }
+
+    try {
+        // Build the query object dynamically based on provided parameters
+        const query = { assign_to: assign_to };
+        
+        // If a status is provided, add it to the query object
+        if (status) {
+            query.status = status.trim();
+        }
+
+        // Find projects that match the query criteria
+        const projects = await Project.find(query);
+
+        // If no projects are found, return a message
+        if (projects.length === 0) {
+            return res.status(404).send({ message: "No projects found for this user" });
+        }
+
+        // Send back the projects if found
+        res.send({ status: "OK", data: projects });
+    } catch (error) {
+        return res.status(500).send({ error: error.message });
+    }
+});
+
+app.get("/get-projects-by-worker", async (req, res) => {
     const { assign_to, status } = req.query; // Get `assign_to` and `status` values from query parameters
     
     if (!assign_to) {
