@@ -87,7 +87,6 @@ app.post("/login-user", async (req, res) => {
     });
 });
 
-
 app.post("/userdata", async (req, res) => {
     const { token } = req.body;
 
@@ -110,12 +109,12 @@ app.post("/userdata", async (req, res) => {
 
 app.get("/get-all-user", async (req, res) => {
     try {
-      const data = await User.find({});
-      res.send({ status: "OK", data: data });
+        const data = await User.find({});
+        res.send({ status: "OK", data: data });
     } catch (error) {
-      return res.send({ error: error });
+        return res.send({ error: error });
     }
-  });
+});
 
 
 
@@ -158,14 +157,45 @@ app.post("/create-project", async (req, res) => {
 
 app.get("/get-all-projects", async (req, res) => {
     try {
-      const data = await Project.find({});
-      res.send({ status: "OK", data: data });
+        const data = await Project.find({});
+        res.send({ status: "OK", data: data });
     } catch (error) {
-      return res.send({ error: error });
+        return res.send({ error: error });
     }
-  });
+});
 
-  app.delete("/delete-project/:id", async (req, res) => {
+app.get("/get-projects-by-assign-to-contractor", async (req, res) => {
+    const { assign_to, status } = req.query; // Get `assign_to` and `status` values from query parameters
+    
+    if (!assign_to) {
+        return res.status(400).send({ error: "assign_to parameter is required" });
+    }
+
+    try {
+        // Build the query object dynamically based on provided parameters
+        const query = { assign_to: assign_to };
+        
+        // If a status is provided, add it to the query object
+        if (status) {
+            query.status = status.trim();
+        }
+
+        // Find projects that match the query criteria
+        const projects = await Project.find(query);
+
+        // If no projects are found, return a message
+        if (projects.length === 0) {
+            return res.status(404).send({ message: "No projects found for this user" });
+        }
+
+        // Send back the projects if found
+        res.send({ status: "OK", data: projects });
+    } catch (error) {
+        return res.status(500).send({ error: error.message });
+    }
+});
+
+app.delete("/delete-project/:id", async (req, res) => {
     const { id } = req.params;
     try {
         await Project.deleteOne({ _id: id });
@@ -209,7 +239,7 @@ app.put("/update-project-on-hold/:projectId", async (req, res) => {
         // Find and update the project with new status and end date
         const updatedProject = await Project.findByIdAndUpdate(
             projectId, // Correct ID usage
-            { 
+            {
                 status, // Update the status field
                 project_end_date, // Update the end date field
                 reason_on_hold, //Update reason for on-hold
@@ -241,7 +271,7 @@ app.put("/update-project-active/:projectId", async (req, res) => {
         // Find and update the project with new status and end date
         const updatedProject = await Project.findByIdAndUpdate(
             projectId, // Correct ID usage
-            { 
+            {
                 status, // Update the status field
                 project_end_date, // Update the end date field
                 reason_on_hold, //Update reason for on-hold
