@@ -2,6 +2,7 @@ const mongoose = require("mongoose");
 
 const UserSchema = new mongoose.Schema({
     role: String,
+    report_to: String,
     firstName: String,
     lastName: String,
     email: { type: String, unique: true },

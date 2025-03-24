@@ -25,7 +25,7 @@ app.get("/", (req, res) => {
 
 app.post("/register", async (req, res) => {
     //array destructing 
-    const { role, firstName, lastName, email, password, aadhar, accountHolder, accountNumber, ifsc, branch, mobile } = req.body;
+    const { role, report_to, firstName, lastName, email, password, aadhar, accountHolder, accountNumber, ifsc, branch, mobile } = req.body;
 
     const oldUser = await User.findOne({ email: email }).collation({ locale: "en", strength: 2 })
 
@@ -38,6 +38,7 @@ app.post("/register", async (req, res) => {
     try {
         await User.create({
             role: role,
+            report_to, report_to,
             firstName: firstName,
             lastName,
             email,
