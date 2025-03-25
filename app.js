@@ -25,7 +25,7 @@ app.get("/", (req, res) => {
 
 app.post("/register", async (req, res) => {
     //array destructing 
-    const { role, report_to, firstName, lastName, email, password, aadhar, accountHolder, accountNumber, ifsc, branch, mobile } = req.body;
+    const { role, report_to, firstName, lastName, email, password, aadhar, accountHolder, accountNumber, ifsc, branch, mobile, contractor_id, contractor_name,admin_id, admin_name } = req.body;
 
     const oldUser = await User.findOne({ email: email }).collation({ locale: "en", strength: 2 })
 
@@ -38,7 +38,6 @@ app.post("/register", async (req, res) => {
     try {
         await User.create({
             role: role,
-            report_to, report_to,
             firstName: firstName,
             lastName,
             email,
@@ -49,6 +48,10 @@ app.post("/register", async (req, res) => {
             ifsc,
             branch,
             mobile,
+            contractor_id,
+            contractor_name,
+            admin_id,
+            admin_name,
         })
         res.send({ status: "OK", data: "User created" })
     } catch (error) {
@@ -123,7 +126,7 @@ const Project = mongoose.model("ProjectInfo")
 
 app.post("/create-project", async (req, res) => {
     //array destructing 
-    const { project_Id, project_description, long_project_description, created_by, project_start_date, project_end_date, contractor_phone, completion_percentage, status } = req.body;
+    const { project_Id, project_description, long_project_description, created_by, project_start_date, project_end_date, contractor_phone, completion_percentage, status, contractor_id, contractor_name, worker_id, worker_name } = req.body;
 
     const oldProject = await Project.findOne({ project_Id: project_Id }).collation({ locale: "en", strength: 2 })
 
@@ -147,6 +150,10 @@ app.post("/create-project", async (req, res) => {
             contractor_phone,
             completion_percentage,
             status,
+            contractor_id,
+            contractor_name,
+            worker_id,
+            worker_name,
         })
         res.send({ status: "OK", data: "Project created" })
     } catch (error) {
