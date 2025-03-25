@@ -203,15 +203,15 @@ app.get("/get-projects-by-admin", async (req, res) => {
 });
 
 app.get("/get-projects-by-contractor", async (req, res) => {
-    const { assign_to, status } = req.query; // Get `assign_to` and `status` values from query parameters
+    const { contractor_name, status } = req.query; // Get `contractor_name` and `status` values from query parameters
     
-    if (!assign_to) {
-        return res.status(400).send({ error: "assign_to parameter is required" });
+    if (!contractor_name) {
+        return res.status(400).send({ error: "contractor_name parameter is required" });
     }
 
     try {
         // Build the query object dynamically based on provided parameters
-        const query = { assign_to: assign_to };
+        const query = { contractor_name: contractor_name };
         
         // If a status is provided, add it to the query object
         if (status) {
@@ -234,15 +234,15 @@ app.get("/get-projects-by-contractor", async (req, res) => {
 });
 
 app.get("/get-projects-by-worker", async (req, res) => {
-    const { assign_to, status } = req.query; // Get `assign_to` and `status` values from query parameters
+    const { worker_name, status } = req.query; // Get `worker_name` and `status` values from query parameters
     
-    if (!assign_to) {
-        return res.status(400).send({ error: "assign_to parameter is required" });
+    if (!worker_name) {
+        return res.status(400).send({ error: "worker_name parameter is required" });
     }
 
     try {
         // Build the query object dynamically based on provided parameters
-        const query = { assign_to: assign_to };
+        const query = { worker_name: worker_name };
         
         // If a status is provided, add it to the query object
         if (status) {
@@ -276,12 +276,12 @@ app.delete("/delete-project/:id", async (req, res) => {
 
 app.put("/update-project/:projectId", async (req, res) => {
     const { projectId } = req.params; // Correcting param usage
-    const { assign_to } = req.body; // Expecting contractor's name
+    const { contractor_name } = req.body; // Expecting contractor's name
 
     try {
         const updatedProject = await Project.findByIdAndUpdate(
             projectId, // Correct ID usage
-            { assign_to }, // Store contractor's name properly
+            { contractor_name }, // Store contractor's name properly
             { new: true, upsert: true } // Ensure new field is added
         );
 
