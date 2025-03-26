@@ -359,6 +359,40 @@ app.put("/update-project-active/:projectId", async (req, res) => {
     }
 });
 
+app.put("/update-worker-name", async (req, res) => {
+    // Destructure request body
+    let { worker_name, contractor_name, project_description } = req.body;
+
+    // Trim any leading/trailing spaces from the inputs
+    worker_name = worker_name.trim();
+    contractor_name = contractor_name.trim();
+    project_description = project_description.trim();
+
+    // Check for missing fields
+    if (!worker_name || !contractor_name || !project_description) {
+        return res.status(400).json({ status: "ERROR", message: "Missing required fields" });
+    }
+
+    try {
+        // Find the project by project_description and contractor_name and update it
+        const updatedProject = await Project.findOneAndUpdate(
+            { project_description: project_description, contractor_name: contractor_name },  // Using both fields for search
+            { $set: { worker_name: worker_name } },  // Only updating worker_name
+            { new: true }  // Return the updated document
+        );
+
+        if (!updatedProject) {
+            return res.status(404).json({ status: "ERROR", message: "Project not found for the given contractor" });
+        }
+
+        res.json({ status: "OK", message: "Worker name updated successfully", data: updatedProject });
+    } catch (error) {
+        console.error("Error updating worker name in project:", error);
+        res.status(500).json({ status: "ERROR", message: "Server error" });
+    }
+});
+
+
 
 app.listen(5001, () => {
     console.log('Node js server has been started!!!')
