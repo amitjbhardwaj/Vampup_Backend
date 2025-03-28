@@ -25,7 +25,7 @@ app.get("/", (req, res) => {
 
 app.post("/register", async (req, res) => {
     //array destructing 
-    const { role, report_to, firstName, lastName, email, password, aadhar, accountHolder, accountNumber, ifsc, branch, mobile, contractor_id, contractor_name,admin_id, admin_name } = req.body;
+    const { role, report_to, firstName, lastName, email, password, aadhar, accountHolder, accountNumber, ifsc, branch, mobile, contractor_id, contractor_name, admin_id, admin_name } = req.body;
 
     const oldUser = await User.findOne({ email: email }).collation({ locale: "en", strength: 2 })
 
@@ -171,9 +171,33 @@ app.get("/get-all-projects", async (req, res) => {
     }
 });
 
+app.get("/get-completed-projects", async (req, res) => {
+    try {
+        const { workerName } = req.query;
+
+        if (!workerName) {
+            return res.status(400).json({ error: "Worker name is required" });
+        }
+
+        console.log("Received workerName:", workerName);
+
+        const completedProjects = await Project.find({
+            worker_name: { $regex: new RegExp(`^${workerName}$`, "i") }, // Case insensitive match
+            completion_percentage: { $gte: 100 },
+        });
+
+        console.log("Fetched projects:", completedProjects);
+
+        res.json({ status: "OK", data: completedProjects });
+    } catch (error) {
+        console.error("Error fetching projects:", error);
+        res.status(500).json({ error: "Error fetching completed projects", details: error.message });
+    }
+});
+
 app.get("/get-projects-by-admin", async (req, res) => {
     const { created_by, status } = req.query; // Get `created_by` and `status` values from query parameters
-    
+
     if (!created_by) {
         return res.status(400).send({ error: "created_by parameter is required" });
     }
@@ -181,7 +205,7 @@ app.get("/get-projects-by-admin", async (req, res) => {
     try {
         // Build the query object dynamically based on provided parameters
         const query = { created_by: created_by };
-        
+
         // If a status is provided, add it to the query object
         if (status) {
             query.status = status.trim();
@@ -204,7 +228,7 @@ app.get("/get-projects-by-admin", async (req, res) => {
 
 app.get("/get-projects-by-contractor", async (req, res) => {
     const { contractor_name, status } = req.query; // Get `contractor_name` and `status` values from query parameters
-    
+
     if (!contractor_name) {
         return res.status(400).send({ error: "contractor_name parameter is required" });
     }
@@ -212,7 +236,7 @@ app.get("/get-projects-by-contractor", async (req, res) => {
     try {
         // Build the query object dynamically based on provided parameters
         const query = { contractor_name: contractor_name };
-        
+
         // If a status is provided, add it to the query object
         if (status) {
             query.status = status.trim();
@@ -235,7 +259,7 @@ app.get("/get-projects-by-contractor", async (req, res) => {
 
 app.get("/get-projects-by-worker", async (req, res) => {
     const { worker_name, status } = req.query; // Get `worker_name` and `status` values from query parameters
-    
+
     if (!worker_name) {
         return res.status(400).send({ error: "worker_name parameter is required" });
     }
@@ -243,7 +267,7 @@ app.get("/get-projects-by-worker", async (req, res) => {
     try {
         // Build the query object dynamically based on provided parameters
         const query = { worker_name: worker_name };
-        
+
         // If a status is provided, add it to the query object
         if (status) {
             query.status = status.trim();
@@ -295,6 +319,36 @@ app.put("/update-project/:projectId", async (req, res) => {
         res.status(500).json({ status: "ERROR", message: "Server error" });
     }
 });
+
+app.put("/update-project-completion/:projectId", async (req, res) => {
+    const { projectId } = req.params;
+    const { completion_percentage, status } = req.body;
+
+    if (completion_percentage < 0 || completion_percentage > 100) {
+        return res.status(400).json({ status: "ERROR", message: "Completion percentage must be between 0 and 100." });
+    }
+
+    try {
+        const updatedProject = await Project.findByIdAndUpdate(
+            projectId,
+            {
+                completion_percentage,
+                status
+            },
+            { new: true, upsert: false } // Ensure it updates an existing document only
+        );
+
+        if (!updatedProject) {
+            return res.status(404).json({ status: "ERROR", message: "Project not found" });
+        }
+
+        res.json({ status: "OK", message: "Completion percentage updated successfully", data: updatedProject });
+    } catch (error) {
+        console.error("Update project completion error:", error);
+        res.status(500).json({ status: "ERROR", message: "Server error" });
+    }
+});
+
 
 app.put("/update-project-on-hold/:projectId", async (req, res) => {
     const { projectId } = req.params; // Correct ID usage
