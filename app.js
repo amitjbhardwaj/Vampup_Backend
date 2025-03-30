@@ -4,6 +4,8 @@ const mongoose = require('mongoose');
 app.use(express.json())
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
+const multer = require("multer");
+const path = require("path");
 
 const mongoUrl = "mongodb+srv://amitjbhardwaj:admin@cluster0.mcxgr.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0"
 
@@ -194,6 +196,7 @@ app.get("/get-completed-projects", async (req, res) => {
         res.status(500).json({ error: "Error fetching completed projects", details: error.message });
     }
 });
+
 
 app.get("/get-projects-by-admin", async (req, res) => {
     const { created_by, status } = req.query; // Get `created_by` and `status` values from query parameters
@@ -446,6 +449,73 @@ app.put("/update-worker-name", async (req, res) => {
     }
 });
 
+// Middleware to parse JSON bodies
+app.use(express.json());
+
+// Configure Multer to handle image uploads
+const storage = multer.diskStorage({
+    destination: (req, file, cb) => {
+        cb(null, 'uploads'); // Store files in the 'uploads' folder
+    },
+    filename: (req, file, cb) => {
+        cb(null, Date.now() + path.extname(file.originalname)); // Use current timestamp as filename
+    }
+});
+const upload = multer({ storage });
+
+// Endpoint to upload images
+app.post("/upload-images", upload.array('images'), async (req, res) => {
+    const { project_Id } = req.body;
+    const uploadedImages = req.files;
+
+    if (!project_Id || uploadedImages.length === 0) {
+        return res.status(400).json({ status: "ERROR", message: "Project ID and images are required." });
+    }
+
+    try {
+        const project = await Project.findOne({ project_Id });
+
+        if (!project) {
+            return res.status(404).json({ status: "ERROR", message: "Project not found." });
+        }
+
+        const imagePaths = uploadedImages.map(file => `/uploads/${file.filename}`);
+        project.images = [...project.images, ...imagePaths];
+
+        await project.save();
+
+        res.status(200).json({ status: "OK", message: "Images uploaded successfully.", data: project });
+    } catch (error) {
+        console.error("Error uploading images:", error);
+        res.status(500).json({ status: "ERROR", message: "Could not upload images." });
+    }
+});
+
+// Endpoint to delete an image
+app.post("/delete-image", async (req, res) => {
+    const { project_Id, image_url } = req.body;
+
+    if (!project_Id || !image_url) {
+        return res.status(400).json({ status: "ERROR", message: "Project ID and image URL are required." });
+    }
+
+    try {
+        const project = await Project.findOne({ project_Id });
+
+        if (!project) {
+            return res.status(404).json({ status: "ERROR", message: "Project not found." });
+        }
+
+        // Remove the image from the project
+        project.images = project.images.filter(image => image !== image_url);
+        await project.save();
+
+        res.status(200).json({ status: "OK", message: "Image deleted successfully." });
+    } catch (error) {
+        console.error("Error deleting image:", error);
+        res.status(500).json({ status: "ERROR", message: "Could not delete image." });
+    }
+});
 
 
 app.listen(5001, () => {
