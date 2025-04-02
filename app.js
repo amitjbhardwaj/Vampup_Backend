@@ -323,6 +323,28 @@ app.put("/update-project/:projectId", async (req, res) => {
     }
 });
 
+app.put("/update-project-status/:projectId", async (req, res) => {
+    const { projectId } = req.params;
+    const { project_status } = req.body;
+
+    try {
+        const updatedProject = await Project.findByIdAndUpdate(
+            projectId,
+            { project_status },
+            { new: true, upsert: true } // Ensure new field is added
+        );
+
+        if (!updatedProject) {
+            return res.status(404).json({ status: "ERROR", message: "Project not found" });
+        }
+
+        res.json({ status: "OK", message: "Project status ", data: updatedProject });
+    } catch (error) {
+        console.error("Update project error:", error);
+        res.status(500).json({ status: "ERROR", message: "Server error" });
+    }
+});
+
 app.put("/update-project-completion/:projectId", async (req, res) => {
     const { projectId } = req.params;
     const { completion_percentage, status } = req.body;
@@ -352,15 +374,21 @@ app.put("/update-project-completion/:projectId", async (req, res) => {
     }
 });
 
-
 app.put("/update-project-on-hold/:projectId", async (req, res) => {
     const { projectId } = req.params; // Correct ID usage
-    const { status, project_end_date, reason_on_hold } = req.body; // Expecting new status and end date in the request body
+    const { status, project_end_date, reason_on_hold } = req.body;
+    const updateFields = { status, reason_on_hold };
+
     // Validate input
     if (!status || !project_end_date || !reason_on_hold) {
         return res.status(400).json({ status: "ERROR", message: "Status and End Date are required" });
     }
 
+    if (status !== "On-Hold") {
+        updateFields.project_end_date = project_end_date;
+    }
+
+    
     try {
         // Find and update the project with new status and end date
         const updatedProject = await Project.findByIdAndUpdate(
@@ -461,6 +489,7 @@ const storage = multer.diskStorage({
         cb(null, Date.now() + path.extname(file.originalname)); // Use current timestamp as filename
     }
 });
+
 const upload = multer({ storage });
 
 // Endpoint to upload images
