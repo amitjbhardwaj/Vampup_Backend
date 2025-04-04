@@ -17,6 +17,9 @@ const ProjectDetailSchema = new mongoose.Schema({
     worker_name: String,
     images: { type: [String], default: [] },
     project_status: String,
+    rejection_reason: String,
+
+
 }, { collation: { locale: 'en', strength: 2 } }); // Ensure collation is an object
 
 mongoose.model("ProjectInfo", ProjectDetailSchema);

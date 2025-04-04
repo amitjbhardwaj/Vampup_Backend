@@ -388,7 +388,7 @@ app.put("/update-project-on-hold/:projectId", async (req, res) => {
         updateFields.project_end_date = project_end_date;
     }
 
-    
+
     try {
         // Find and update the project with new status and end date
         const updatedProject = await Project.findByIdAndUpdate(
@@ -546,6 +546,23 @@ app.post("/delete-image", async (req, res) => {
     }
 });
 
+
+require("./PaymentDetails")
+const Payment = mongoose.model("PaymentInfo")
+
+// Route to allocate initial amount
+app.post("/allocate-amount", async (req, res) => {
+    const { project_Id, amount_allocated } = req.body;
+    try {
+        await Payment.create({
+            project_Id: project_Id,
+            amount_allocated,
+        })
+        res.send({ status: "OK", data: "Amount allocated" })
+    } catch (error) {
+        res.send({ status: "error", data: error })
+    }
+});
 
 app.listen(5001, () => {
     console.log('Node js server has been started!!!')
