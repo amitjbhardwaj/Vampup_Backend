@@ -658,6 +658,46 @@ app.post("/create-complaint", async (req, res) => {
     }
 })
 
+// PUT endpoint to update complaint by project_Id
+app.put("/update-complaint/:project_Id", async (req, res) => {
+    const { project_Id } = req.params;
+    const { subject, complaint_Description } = req.body;
+
+    try {
+        const updatedComplaint = await Complaint.findOneAndUpdate(
+            { project_Id },
+            { subject, complaint_Description },
+            { new: true } // Return the updated document
+        );
+
+        if (!updatedComplaint) {
+            return res.status(404).send({ status: "error", data: "Complaint not found" });
+        }
+
+        res.send({ status: "OK", data: updatedComplaint });
+    } catch (error) {
+        console.error("Error updating complaint:", error);
+        res.status(500).send({ status: "error", data: error });
+    }
+});
+
+app.delete("/delete-complaint/:complaint_Id", async (req, res) => {
+    const complaint_Id = req.params.complaint_Id;
+
+    try {
+        const result = await Complaint.deleteOne({ complaint_Id });
+
+        if (result.deletedCount === 1) {
+            res.json({ status: "OK", message: "Complaint deleted successfully" });
+        } else {
+            res.status(404).json({ status: "FAILED", message: "Complaint not found" });
+        }
+    } catch (error) {
+        console.error("Delete error:", error);
+        res.status(500).json({ status: "FAILED", message: "Server error during delete" });
+    }
+});
+
 app.listen(5001, () => {
     console.log('Node js server has been started!!!')
 })
