@@ -638,7 +638,7 @@ const Complaint = mongoose.model("ComplaintInfo")
 
 app.post("/create-complaint", async (req, res) => {
 
-    const { project_Id, complaint_Id, subject, complaint_Description, project_Description, long_Project_Description, project_Start_Date, complaint_Date, phone } = req.body;
+    const { project_Id, complaint_Id, subject, complaint_Description, project_Description, long_Project_Description, project_Start_Date, complaint_Date,created_by, phone } = req.body;
     console.log("Received complaint:", req.body);
     try {
         await Complaint.create({
@@ -650,6 +650,7 @@ app.post("/create-complaint", async (req, res) => {
             long_Project_Description,
             project_Start_Date,
             complaint_Date,
+            created_by,
             phone
         })
         res.send({ status: "OK", data: "Complaint created" })
@@ -657,6 +658,20 @@ app.post("/create-complaint", async (req, res) => {
         res.send({ status: "error", data: error })
     }
 })
+
+// GET complaints for a specific worker by name
+app.get("/get-complaints-by-worker/:workerName", async (req, res) => {
+    const { workerName } = req.params;  // Use workerName here instead of created_by
+
+    try {
+        const complaints = await Complaint.find({ created_by: workerName });
+        res.json({ status: "OK", data: complaints });
+    } catch (error) {
+        console.error("Error fetching complaints:", error);
+        res.status(500).json({ status: "FAILED", message: "Error fetching complaints" });
+    }
+});
+
 
 // PUT endpoint to update complaint by project_Id
 app.put("/update-complaint/:project_Id", async (req, res) => {

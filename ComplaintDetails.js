@@ -9,6 +9,7 @@ const ComplaintDetailSchema = new mongoose.Schema({
     long_Project_Description: String,
     project_Start_Date: String,
     complaint_Date: String,
+    created_by: String,
     phone: String,
 
 }, { collation: { locale: 'en', strength: 2 } });
