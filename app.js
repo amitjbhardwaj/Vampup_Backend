@@ -557,12 +557,106 @@ app.post("/allocate-amount", async (req, res) => {
         await Payment.create({
             project_Id: project_Id,
             amount_allocated,
+            new_amount_allocated: amount_allocated
         })
         res.send({ status: "OK", data: "Amount allocated" })
     } catch (error) {
         res.send({ status: "error", data: error })
     }
 });
+
+app.put("/update-allocated-amount", async (req, res) => {
+    try {
+        const { project_Id } = req.query;
+        const { new_amount_allocated } = req.body;
+
+        if (!project_Id || new_amount_allocated === undefined) {
+            return res.status(400).json({ error: "project_Id and new fund are required" });
+        }
+
+        const updatedPayment = await Payment.findOneAndUpdate(
+            { project_Id },
+            { $set: { new_amount_allocated: new_amount_allocated } },
+            { new: true }
+        );
+
+        if (!updatedPayment) {
+            return res.status(404).json({ error: "Project not found" });
+        }
+
+        res.status(200).json({ message: "Fund updated successfully", data: updatedPayment });
+    } catch (error) {
+        console.error("Error updating allocated amount:", error);
+        res.status(500).json({ error: "Internal Server Error", details: error.message });
+    }
+});
+
+app.get("/get-allocated-funds-by-admin", async (req, res) => {
+    try {
+        const { created_by } = req.query;
+
+        if (!created_by) {
+            return res.status(400).json({ error: "created_by is required" });
+        }
+
+        const projects = await Project.find({ created_by });
+        const projectIds = projects.map(p => p.project_Id);
+
+        const payments = await Payment.find({ project_Id: { $in: projectIds } });
+
+        const fundMap = {};
+        payments.forEach(payment => {
+            fundMap[payment.project_Id] = {
+                amount_allocated: payment.amount_allocated,
+                new_amount_allocated: payment.new_amount_allocated,
+            };
+        });
+
+        return res.status(200).json({ status: "OK", data: fundMap });
+    } catch (error) {
+        console.error("Error fetching funds:", error);
+        res.status(500).json({ status: "FAILED", error: error.message });
+    }
+});
+
+app.get("/get-fund-history", async (req, res) => {
+    const { project_Id } = req.query;
+    try {
+        const result = await Payment.findOne({ project_Id });
+        if (result) {
+            res.json({ status: "OK", data: result.allocations });
+        } else {
+            res.json({ status: "NO_HISTORY", data: [] });
+        }
+    } catch (error) {
+        res.status(500).json({ status: "ERROR", message: error.message });
+    }
+});
+
+require("./ComplaintDetails")
+const Complaint = mongoose.model("ComplaintInfo")
+
+app.post("/create-complaint", async (req, res) => {
+
+    const { project_Id, complaint_Id, subject, complaint_Description, project_Description, long_Project_Description, project_Start_Date, complaint_Date, phone } = req.body;
+    console.log("Received complaint:", req.body);
+    try {
+        await Complaint.create({
+            project_Id,
+            complaint_Id,
+            subject,
+            complaint_Description,
+            project_Description,
+            long_Project_Description,
+            project_Start_Date,
+            complaint_Date,
+            phone
+        })
+        res.send({ status: "OK", data: "Complaint created" })
+    } catch (error) {
+        res.send({ status: "error", data: error })
+    }
+})
 
 app.listen(5001, () => {
     console.log('Node js server has been started!!!')
