@@ -8,9 +8,8 @@ const multer = require("multer");
 const path = require("path");
 
 const mongoUrl = "mongodb+srv://amitjbhardwaj:admin@cluster0.mcxgr.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0"
-
-
 const JWT_SECRET = "skldfjdsflk()dkfljfkf[]sklmf345klmkvdfmvklksdgj40pop64iktelrgel";
+
 mongoose.connect(mongoUrl).then(() => {
     console.log("Database connected");
 }).catch((e) => {
@@ -121,8 +120,6 @@ app.get("/get-all-user", async (req, res) => {
     }
 });
 
-
-
 require("./ProjectsDetails")
 const Project = mongoose.model("ProjectInfo")
 
@@ -165,7 +162,6 @@ app.post("/create-project", async (req, res) => {
     }
 })
 
-
 app.get("/get-all-projects", async (req, res) => {
     try {
         const data = await Project.find({});
@@ -198,7 +194,6 @@ app.get("/get-completed-projects", async (req, res) => {
         res.status(500).json({ error: "Error fetching completed projects", details: error.message });
     }
 });
-
 
 app.get("/get-projects-by-admin", async (req, res) => {
     const { created_by, status } = req.query; // Get `created_by` and `status` values from query parameters
@@ -663,7 +658,6 @@ app.get("/get-fund-by-project", async (req, res) => {
     }
 });
 
-
 require("./ComplaintDetails")
 const Complaint = mongoose.model("ComplaintInfo")
 
@@ -702,7 +696,6 @@ app.get("/get-complaints-by-worker/:workerName", async (req, res) => {
         res.status(500).json({ status: "FAILED", message: "Error fetching complaints" });
     }
 });
-
 
 // PUT endpoint to update complaint by project_Id
 app.put("/update-complaint/:project_Id", async (req, res) => {
