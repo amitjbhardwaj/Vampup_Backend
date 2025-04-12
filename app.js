@@ -633,6 +633,29 @@ app.get("/get-fund-history", async (req, res) => {
     }
 });
 
+// Assuming you're using the Payment model
+
+app.get("/get-fund-by-project", async (req, res) => {
+    const { project_Id } = req.query;
+
+    if (!project_Id) {
+        return res.status(400).json({ error: "Project ID is required" });
+    }
+
+    try {
+        const fund = await Payment.findOne({ project_Id });
+
+        if (!fund) {
+            return res.status(404).json({ error: "No fund found for this project" });
+        }
+
+        res.json({ status: "OK", data: fund });
+    } catch (error) {
+        res.status(500).json({ status: "error", message: "Server error", details: error.message });
+    }
+});
+
+
 require("./ComplaintDetails")
 const Complaint = mongoose.model("ComplaintInfo")
 
