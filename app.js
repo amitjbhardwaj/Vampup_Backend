@@ -128,7 +128,7 @@ const Project = mongoose.model("ProjectInfo")
 
 app.post("/create-project", async (req, res) => {
     //array destructing 
-    const { project_Id, project_description, long_project_description, created_by, project_start_date, project_end_date, contractor_phone, completion_percentage, status, contractor_id, contractor_name, worker_id, worker_name } = req.body;
+    const { project_Id, project_description, long_project_description, created_by, project_start_date, project_end_date, mobile, contractor_phone, completion_percentage, status, contractor_id, contractor_name, worker_id, worker_name, worker_phone } = req.body;
 
     const oldProject = await Project.findOne({ project_Id: project_Id }).collation({ locale: "en", strength: 2 })
 
@@ -149,6 +149,7 @@ app.post("/create-project", async (req, res) => {
             created_by,
             project_start_date: formattedStartDate,
             project_end_date,
+            mobile,
             contractor_phone,
             completion_percentage,
             status,
@@ -156,6 +157,7 @@ app.post("/create-project", async (req, res) => {
             contractor_name,
             worker_id,
             worker_name,
+            worker_phone,
         })
         res.send({ status: "OK", data: "Project created" })
     } catch (error) {
@@ -303,12 +305,12 @@ app.delete("/delete-project/:id", async (req, res) => {
 
 app.put("/update-project/:projectId", async (req, res) => {
     const { projectId } = req.params; // Correcting param usage
-    const { contractor_name } = req.body; // Expecting contractor's name
+    const { contractor_name, contractor_phone } = req.body; // Expecting contractor's name
 
     try {
         const updatedProject = await Project.findByIdAndUpdate(
             projectId, // Correct ID usage
-            { contractor_name }, // Store contractor's name properly
+            { contractor_name, contractor_phone }, // Store contractor's name properly
             { new: true, upsert: true } // Ensure new field is added
         );
 
@@ -446,11 +448,12 @@ app.put("/update-project-active/:projectId", async (req, res) => {
 
 app.put("/update-worker-name", async (req, res) => {
     // Destructure request body
-    let { worker_name, contractor_name, project_description } = req.body;
+    let { worker_name, contractor_name, project_description, worker_phone } = req.body;
 
     // Trim any leading/trailing spaces from the inputs
     worker_name = worker_name.trim();
-    contractor_name = contractor_name.trim();
+    worker_phone = worker_phone,
+        contractor_name = contractor_name.trim();
     project_description = project_description.trim();
 
     // Check for missing fields
@@ -461,9 +464,14 @@ app.put("/update-worker-name", async (req, res) => {
     try {
         // Find the project by project_description and contractor_name and update it
         const updatedProject = await Project.findOneAndUpdate(
-            { project_description: project_description, contractor_name: contractor_name },  // Using both fields for search
-            { $set: { worker_name: worker_name } },  // Only updating worker_name
-            { new: true }  // Return the updated document
+            { project_description: project_description, contractor_name: contractor_name },
+            {
+                $set: {
+                    worker_name: worker_name,
+                    worker_phone: worker_phone
+                }
+            },
+            { new: true }
         );
 
         if (!updatedProject) {
@@ -661,7 +669,7 @@ const Complaint = mongoose.model("ComplaintInfo")
 
 app.post("/create-complaint", async (req, res) => {
 
-    const { project_Id, complaint_Id, subject, complaint_Description, project_Description, long_Project_Description, project_Start_Date, complaint_Date,created_by, phone } = req.body;
+    const { project_Id, complaint_Id, subject, complaint_Description, project_Description, long_Project_Description, project_Start_Date, complaint_Date, created_by, phone } = req.body;
     console.log("Received complaint:", req.body);
     try {
         await Complaint.create({

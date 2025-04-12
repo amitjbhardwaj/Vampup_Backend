@@ -7,6 +7,7 @@ const ProjectDetailSchema = new mongoose.Schema({
     created_by: String,
     project_start_date: String,
     project_end_date: String,
+    mobile: String,
     contractor_id: String, // this fields in for DB
     contractor_name: String,
     contractor_phone: String,
