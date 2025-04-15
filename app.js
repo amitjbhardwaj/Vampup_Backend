@@ -26,7 +26,7 @@ app.get("/", (req, res) => {
 
 app.post("/register", async (req, res) => {
     //array destructing 
-    const { role, report_to, firstName, lastName, email, password, aadhar, accountHolder, accountNumber, ifsc, branch, mobile, contractor_id, contractor_name, admin_id, admin_name } = req.body;
+    const { role, firstName, lastName, email, password, aadhar, accountHolder, accountNumber, ifsc, branch, mobile, contractor_id, contractor_name, admin_id, admin_name, passcode } = req.body;
 
     const oldUser = await User.findOne({ email: email }).collation({ locale: "en", strength: 2 })
 
@@ -53,6 +53,7 @@ app.post("/register", async (req, res) => {
             contractor_name,
             admin_id,
             admin_name,
+            passcode,
         })
         res.send({ status: "OK", data: "User created" })
     } catch (error) {
@@ -88,6 +89,7 @@ app.post("/login-user", async (req, res) => {
         role: oldUser.role,
         firstName: oldUser.firstName,
         lastName: oldUser.lastName,
+        aadhar
     });
 });
 

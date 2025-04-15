@@ -16,6 +16,7 @@ const UserSchema = new mongoose.Schema({
     contractor_name: String,
     admin_id: String, // this fields in for DB
     admin_name: String,
+    passcode: String,
 }, { collation: { locale: 'en', strength: 2 } }); // Ensure collation is an object
 
 mongoose.model("UserInfo", UserSchema);
