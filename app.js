@@ -89,7 +89,6 @@ app.post("/login-user", async (req, res) => {
         role: oldUser.role,
         firstName: oldUser.firstName,
         lastName: oldUser.lastName,
-        aadhar
     });
 });
 
