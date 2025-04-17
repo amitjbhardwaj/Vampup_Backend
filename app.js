@@ -121,6 +121,42 @@ app.get("/get-all-user", async (req, res) => {
     }
 });
 
+app.post("/check-aadhar", async (req, res) => {
+    try {
+        const { aadhar } = req.body;
+        const user = await User.findOne({ aadhar });
+
+        if (!user) {
+            return res.status(404).json({ message: "Aadhaar not found" });
+        }
+
+        res.status(200).json({ message: "Aadhaar exists", user });
+    } catch (err) {
+        res.status(500).json({ message: "Server error", error: err.message });
+    }
+});
+
+app.get("/get-passcode/:aadhar", async (req, res) => {
+    const { aadhar } = req.params;
+  
+    try {
+      if (!/^\d{12}$/.test(aadhar)) {
+        return res.status(400).json({ error: "Invalid Aadhaar format" });
+      }
+  
+      const user = await User.findOne({ aadhar });
+  
+      if (!user) {
+        return res.status(404).json({ error: "User not found with provided Aadhaar" });
+      }
+  
+      return res.status(200).json({ passcode: user.passcode || null });
+    } catch (error) {
+      console.error("Error fetching passcode:", error);
+      return res.status(500).json({ error: "Internal Server Error" });
+    }
+  });
+
 require("./ProjectsDetails")
 const Project = mongoose.model("ProjectInfo")
 
