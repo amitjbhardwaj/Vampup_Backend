@@ -138,24 +138,62 @@ app.post("/check-aadhar", async (req, res) => {
 
 app.get("/get-passcode/:aadhar", async (req, res) => {
     const { aadhar } = req.params;
-  
+
     try {
-      if (!/^\d{12}$/.test(aadhar)) {
-        return res.status(400).json({ error: "Invalid Aadhaar format" });
-      }
-  
-      const user = await User.findOne({ aadhar });
-  
-      if (!user) {
-        return res.status(404).json({ error: "User not found with provided Aadhaar" });
-      }
-  
-      return res.status(200).json({ passcode: user.passcode || null });
+        if (!/^\d{12}$/.test(aadhar)) {
+            return res.status(400).json({ error: "Invalid Aadhaar format" });
+        }
+
+        const user = await User.findOne({ aadhar });
+
+        if (!user) {
+            return res.status(404).json({ error: "User not found with provided Aadhaar" });
+        }
+
+        return res.status(200).json({ passcode: user.passcode || null });
     } catch (error) {
-      console.error("Error fetching passcode:", error);
-      return res.status(500).json({ error: "Internal Server Error" });
+        console.error("Error fetching passcode:", error);
+        return res.status(500).json({ error: "Internal Server Error" });
     }
-  });
+});
+
+app.post("/verify-passcode", async (req, res) => {
+    const { aadhar, passcode } = req.body;
+
+    try {
+        const user = await User.findOne({ aadhar });
+
+        if (!user) {
+            return res.status(404).json({ error: "User not found" });
+        }
+
+        // Compare passcode
+        if (user.passcode !== passcode) {
+            return res.status(401).json({ error: "Invalid passcode" });
+        }
+
+        // Generate JWT token
+        const token = jwt.sign(
+            { email: user.email, role: user.role },
+            process.env.JWT_SECRET || "your_secret_key",
+            { expiresIn: "1h" }
+        );
+
+        // Respond with user info and token
+        return res.status(200).json({
+            status: "OK",
+            token,
+            role: user.role,
+            firstName: user.firstName,
+            lastName: user.lastName,
+        });
+
+    } catch (error) {
+        console.error("Error verifying passcode:", error);
+        res.status(500).json({ error: "Internal Server Error" });
+    }
+});
+
 
 require("./ProjectsDetails")
 const Project = mongoose.model("ProjectInfo")
