@@ -254,14 +254,10 @@ app.get("/get-completed-projects", async (req, res) => {
             return res.status(400).json({ error: "Worker name is required" });
         }
 
-        console.log("Received workerName:", workerName);
-
         const completedProjects = await Project.find({
             worker_name: { $regex: new RegExp(`^${workerName}$`, "i") }, // Case insensitive match
             completion_percentage: { $gte: 100 },
         });
-
-        console.log("Fetched projects:", completedProjects);
 
         res.json({ status: "OK", data: completedProjects });
     } catch (error) {
@@ -739,7 +735,7 @@ const Complaint = mongoose.model("ComplaintInfo")
 app.post("/create-complaint", async (req, res) => {
 
     const { project_Id, complaint_Id, subject, complaint_Description, project_Description, long_Project_Description, project_Start_Date, complaint_Date, created_by, phone } = req.body;
-    console.log("Received complaint:", req.body);
+
     try {
         await Complaint.create({
             project_Id,
