@@ -393,20 +393,26 @@ app.put("/update-project/:projectId", async (req, res) => {
 
 app.put("/update-project-status/:projectId", async (req, res) => {
     const { projectId } = req.params;
-    const { project_status } = req.body;
+    const { project_status, completion_percentage } = req.body;
 
     try {
+        // Build the update object dynamically
+        const updateFields = { project_status };
+        if (completion_percentage !== undefined) {
+            updateFields.completion_percentage = completion_percentage;
+        }
+
         const updatedProject = await Project.findByIdAndUpdate(
             projectId,
-            { project_status },
-            { new: true, upsert: true } // Ensure new field is added
+            updateFields,
+            { new: true } // return the updated document
         );
 
         if (!updatedProject) {
             return res.status(404).json({ status: "ERROR", message: "Project not found" });
         }
 
-        res.json({ status: "OK", message: "Project status ", data: updatedProject });
+        res.json({ status: "OK", message: "Project updated successfully", data: updatedProject });
     } catch (error) {
         console.error("Update project error:", error);
         res.status(500).json({ status: "ERROR", message: "Server error" });
