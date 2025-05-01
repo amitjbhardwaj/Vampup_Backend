@@ -246,6 +246,23 @@ app.get("/get-all-projects", async (req, res) => {
     }
 });
 
+app.get("/get-project/:projectId", async (req, res) => {
+    try {
+        const projectId = req.params.projectId;
+        const data = await Project.findOne({ project_Id: projectId });
+
+        if (!data) {
+            return res.status(404).send({ status: "NOT_FOUND", message: "Project not found" });
+        }
+
+        res.status(200).send({ status: "OK", data });
+    } catch (error) {
+        res.status(500).send({ status: "ERROR", message: error.message });
+    }
+});
+
+
+
 app.get("/get-completed-projects", async (req, res) => {
     try {
         const { workerName } = req.query;
@@ -556,6 +573,42 @@ app.put("/update-worker-name", async (req, res) => {
         res.status(500).json({ status: "ERROR", message: "Server error" });
     }
 });
+
+app.put("/update-approvers/:projectId", async (req, res) => {
+    const { projectId } = req.params;
+    const { first_level_approver, second_level_approver } = req.body;
+
+    try {
+        // Construct dynamic update object
+        const updateFields = {};
+        if (first_level_approver !== undefined) {
+            updateFields.first_level_approver = first_level_approver;
+        }
+        if (second_level_approver !== undefined) {
+            updateFields.second_level_approver = second_level_approver;
+        }
+
+        if (Object.keys(updateFields).length === 0) {
+            return res.status(400).json({ status: "FAIL", message: "No fields to update" });
+        }
+
+        const updatedProject = await Project.findOneAndUpdate(
+            { project_Id: projectId },
+            { $set: updateFields },
+            { new: true }
+        );
+
+        if (!updatedProject) {
+            return res.status(404).json({ status: "FAIL", message: "Project not found" });
+        }
+
+        return res.status(200).json({ status: "OK", message: "Approvers updated", data: updatedProject });
+    } catch (error) {
+        console.error("Error updating approvers:", error);
+        return res.status(500).json({ status: "FAIL", message: "Server error" });
+    }
+});
+
 
 // Middleware to parse JSON bodies
 app.use(express.json());

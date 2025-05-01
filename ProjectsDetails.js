@@ -18,6 +18,8 @@ const ProjectDetailSchema = new mongoose.Schema({
     worker_name: String,
     worker_phone: String,
     images: { type: [String], default: [] },
+    first_level_approver: String,
+    second_level_approver: String,
     project_status: String,
     rejection_reason: String,
 
