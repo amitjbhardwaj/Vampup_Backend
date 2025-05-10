@@ -284,19 +284,19 @@ app.get("/get-completed-projects", async (req, res) => {
 });
 
 app.get("/get-projects-by-admin", async (req, res) => {
-    const { created_by, status } = req.query; // Get `created_by` and `status` values from query parameters
-
-    if (!created_by) {
-        return res.status(400).send({ error: "created_by parameter is required" });
-    }
+    const { created_by, status, second_level_approver } = req.query;
 
     try {
-        // Build the query object dynamically based on provided parameters
-        const query = { created_by: created_by };
-
-        // If a status is provided, add it to the query object
+        // Build the query object dynamically
+        const query = {};
+        if (created_by) {
+            query.created_by = created_by;
+        }
         if (status) {
             query.status = status.trim();
+        }
+        if (second_level_approver) {
+            query.second_level_approver = second_level_approver;
         }
 
         // Find projects that match the query criteria
@@ -304,7 +304,7 @@ app.get("/get-projects-by-admin", async (req, res) => {
 
         // If no projects are found, return a message
         if (projects.length === 0) {
-            return res.status(404).send({ message: "No projects found for this user" });
+            return res.status(404).send({ message: "No projects found" });
         }
 
         // Send back the projects if found
@@ -313,6 +313,7 @@ app.get("/get-projects-by-admin", async (req, res) => {
         return res.status(500).send({ error: error.message });
     }
 });
+
 
 app.get("/get-projects-by-contractor", async (req, res) => {
     const { contractor_name, status } = req.query; // Get `contractor_name` and `status` values from query parameters
