@@ -22,7 +22,8 @@ const ProjectDetailSchema = new mongoose.Schema({
     second_level_approver: String,
     project_status: String,
     rejection_reason: String,
-
+    first_level_payment_approver: String,
+    second_level_payment_approver: String,
 
 }, { collation: { locale: 'en', strength: 2 } }); // Ensure collation is an object
 
