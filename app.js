@@ -411,7 +411,7 @@ app.put("/update-project/:projectId", async (req, res) => {
 
 app.put("/update-project-status/:projectId", async (req, res) => {
     const { projectId } = req.params;
-    const { project_status, completion_percentage, first_level_payment_approver} = req.body;
+    const { project_status, completion_percentage, first_level_payment_approver, second_level_payment_approver} = req.body;
 
     try {
         // Build the update object dynamically
@@ -422,6 +422,10 @@ app.put("/update-project-status/:projectId", async (req, res) => {
 
         if (first_level_payment_approver !== undefined) {
             updateFields.first_level_payment_approver = first_level_payment_approver;
+        }
+
+        if (second_level_payment_approver !== undefined) {
+            updateFields.second_level_payment_approver = second_level_payment_approver;
         }
 
         const updatedProject = await Project.findByIdAndUpdate(
